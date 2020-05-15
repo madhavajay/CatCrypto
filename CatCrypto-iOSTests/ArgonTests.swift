@@ -23,6 +23,10 @@ class ArgonTests: XCTestCase {
         let password = "Hi CatCrypto!"
         let result = argon2Crypto.hash(password: password)
         XCTAssertNotNil(result.raw)
+        XCTAssertEqual(
+            result.hexStringValue(),
+            "7c10d417627fbfaf5728e77dc320d0a7597955bf7b71a22b188bc9ec74762a4f"
+        )
         print(result.hexStringValue())
     }
 
@@ -31,7 +35,32 @@ class ArgonTests: XCTestCase {
         let password = "Hi CatCrypto!"
         let result = argon2Crypto.hash(password: password)
         XCTAssertNotNil(result.raw)
+        XCTAssertEqual(
+            result.stringValue(),
+            "$argon2i$v=19$m=4096,t=3,p=1$c29tZXNhbHQ$fBDUF2J/v69XKOd9wyDQp1l5Vb97caIrGIvJ7HR2Kk8"
+        )
         print(result.stringValue())
+    }
+
+    func testHashingRawBytes() {
+        let crypto = CatArgon2Crypto()
+        crypto.context.hashResultType = .hashRaw
+        crypto.context.mode = .argon2id
+        crypto.context.iterations = 1
+        crypto.context.parallelism = 1
+        crypto.context.memory = 1024
+        crypto.context.hashLength = 8
+        let saltHex = "0e0e6fd368aac433f4b59ce218233385"
+        let saltBytes = saltHex.decode(encodeMode: .hex)
+        crypto.context.saltBytes = saltBytes
+
+        let passwordHex = "15b59b443d8c662473e1534189e46f17"
+        let passwordBytes = passwordHex.decode(encodeMode: .hex)
+        let result = crypto.hash(passwordBytes: passwordBytes)
+
+        XCTAssertNotNil(result.raw)
+        XCTAssertEqual(result.hexStringValue(), "2b77a93c0470b400")
+        print(result.hexStringValue())
     }
 
     func testEmptyHashing() {
